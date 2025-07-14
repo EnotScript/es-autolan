@@ -3,9 +3,9 @@ loaderVersion="${loader_version_range}"
 license="All rights reserved"
 
 [[mods]]
-modId="autolan"
+modId="es-autolan"
 version="1.2.1"
-displayName="Auto LAN"
+displayName="ES Auto LAN"
 description='''
 Auto LAN — мод для автоматического открытия одиночного мира Minecraft в LAN-сети при входе в игру.
 Он позволяет задать порт, максимальное количество игроков, изменить MOTD сервера и автоматически подключаться к выбранному миру после задержки.
@@ -27,5 +27,5 @@ credits="discord-enotscript "
 
 [[modConfig]]
 type = "CLIENT"
-modId = "autolan"
+modId = "es-autolan"
 fileName = "autolan-common.toml"
