@@ -1,0 +1,20 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+description='''
+${mod_description}
+'''
+authors="${mod_authors}"
+logoFile="icon.png"
+displayURL="https://discord.com"
+credits="${mod_authors}"
+
+[[modConfig]]
+type = "CLIENT"
+modId = "${mod_id}"
+fileName = "${mod_id}-common.toml"
