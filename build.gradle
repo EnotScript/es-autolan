@@ -111,6 +111,11 @@ def _generatedVersionPath = "${buildDir}/generated/version.txt"
 // Compute file and fallback values at configuration time to avoid referencing script objects
 def _generatedVersionFile = file(_generatedVersionPath)
 def _fallbackModVersion = mod_version
+// Stale IDE output that may contain placeholder metadata
+def _stalePlaceholderMeta = file('bin/main/META-INF/neoforge.mods.toml')
+// Generated and output metadata paths (captured at configuration time)
+def _generatedMeta = file('build/generated/sources/modMetadata/META-INF/neoforge.mods.toml')
+def _outputMeta = file('build/resources/main/META-INF/neoforge.mods.toml')
 
 // Sets up a dependency configuration called 'localRuntime'.
 // This configuration should be used instead of 'runtimeOnly' to declare
@@ -146,27 +151,28 @@ dependencies {
 
 // This block of code expands all declared replace properties in the specified resource targets.
 // A missing property will result in an error. Properties are expanded using ${} Groovy notation.
+// Capture replace properties at configuration time to avoid referencing script objects from task closures
+def _initialReplaceProperties = [
+    minecraft_version      : minecraft_version,
+    minecraft_version_range: minecraft_version_range,
+    neo_version            : neo_version,
+    loader_version_range   : loader_version_range,
+    mod_id                 : mod_id,
+    mod_name               : mod_name,
+    mod_license            : mod_license,
+    // mod_version will be written by `writeComputedVersion` task into build/generated/version.txt
+    mod_version            : mod_version,
+    mod_authors            : mod_authors,
+    mod_description        : mod_description
+]
+
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
-    var replaceProperties = [
-            minecraft_version      : minecraft_version,
-            minecraft_version_range: minecraft_version_range,
-            neo_version            : neo_version,
-            loader_version_range   : loader_version_range,
-            mod_id                 : mod_id,
-            mod_name               : mod_name,
-            mod_license            : mod_license,
-            // mod_version will be written by `writeComputedVersion` task into build/generated/version.txt
-            mod_version            : mod_version,
-            mod_authors            : mod_authors,
-            mod_description        : mod_description
-    ]
     dependsOn(tasks.named('writeComputedVersion'))
-    inputs.properties replaceProperties
+    inputs.properties _initialReplaceProperties
     // Resolve the computed version at execution time (after writeComputedVersion runs)
     doFirst {
-        def versionFile = file(_generatedVersionPath)
-        def resolvedVersion = versionFile.exists() ? versionFile.text.trim() : mod_version
-        def execReplace = replaceProperties + [mod_version: resolvedVersion]
+        def resolvedVersion = _generatedVersionFile.exists() ? _generatedVersionFile.text.trim() : _initialReplaceProperties.mod_version
+        def execReplace = _initialReplaceProperties + [mod_version: resolvedVersion]
         expand execReplace
     }
     from "src/main/templates"
@@ -208,7 +214,8 @@ tasks.register('writeComputedVersion') {
 }
 // Include the output of "generateModMetadata" as an input directory for the build
 // this works with both building through Gradle and the IDE.
-sourceSets.main.resources.srcDir generateModMetadata
+// Add the generated metadata directory as an explicit resources source directory
+sourceSets.main.resources.srcDir file("build/generated/sources/modMetadata")
 // To avoid having to run "generateModMetadata" manually, make it run on every project reload
 neoForge.ideSyncTask generateModMetadata
 
@@ -233,6 +240,37 @@ tasks.withType(JavaCompile).configureEach {
 // Avoid duplicate META-INF entries (e.g., generated + static neoforge.mods.toml)
 tasks.named('processResources', Copy).configure {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    // Ensure generated metadata and computed version are created before resources are processed
+    dependsOn(tasks.named('generateModMetadata'))
+    // Remove any stale placeholder files that might be present from IDE output
+    doFirst {
+        if (_stalePlaceholderMeta.exists()) {
+            _stalePlaceholderMeta.delete()
+        }
+    }
+
+    // Copy resources from src/main/resources but exclude any static neoforge.mods.toml there
+    from('src/main/resources') {
+        exclude('META-INF/neoforge.mods.toml')
+    }
+
+    // Also copy the generated metadata directory (which contains the real neoforge.mods.toml)
+    from('build/generated/sources/modMetadata')
+    // Ensure the generated metadata overwrites any placeholder left behind
+    doLast {
+        if (_generatedMeta.exists()) {
+            _outputMeta.parentFile.mkdirs()
+            _generatedMeta.withInputStream { ins -> _outputMeta.withOutputStream { out -> out << ins } }
+        }
+    }
+}
+
+// Make JAR artifacts use the computed version when available
+tasks.withType(Jar).configureEach {
+    archiveVersion.set(provider {
+        return _generatedVersionFile.exists() ? _generatedVersionFile.text.trim() : project.version
+    })
 }
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
