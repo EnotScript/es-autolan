@@ -54,5 +54,22 @@
   "config.autolan.motd.comment": "Описание сервера (MOTD)",
   "config.autolan.motd.default": "Добро пожаловать в мир AutoLAN!",
   "config.autolan.autojoinWorldName.comment": "Имя мира для автоматического входа (папка в saves)",
-  "config.autolan.autojoinDelaySeconds.comment": "Задержка перед автозагрузкой мира (в секундах)"
+  "config.autolan.autojoinDelaySeconds.comment": "Задержка перед автозагрузкой мира (в секундах)",
+
+  "autolan.command.toggle.on": "AutoLan включён",
+  "autolan.command.toggle.off": "AutoLan выключен",
+  "autolan.command.port.changed": "Порт изменён на %s",
+  "autolan.command.gametype.invalid": "Недопустимый режим игры! Допустимые значения: survival, creative, adventure, spectator",
+  "autolan.command.gametype.changed": "Режим игры изменён на %s",
+  "autolan.command.cheats.on": "Читы разрешены",
+  "autolan.command.cheats.off": "Читы запрещены",
+  "autolan.command.maxplayers.changed": "Максимум игроков установлен: %s",
+  "autolan.command.motd.changed": "MOTD обновлён: %s",
+  "autolan.command.reload.done": "Конфигурация сохранена",
+  "autolan.command.autojoinDelaySeconds.changed": "Задержка автозагрузки установлена: %s секунд",
+  "autolan.command.autojoinWorldName.changed": "Имя мира для автозагрузки установлено: %s",
+
+  "autolan.autojoin.starting": "Автовход: попытка открыть мир: %s",
+  "autolan.autojoin.failed_no_world": "Автовход не выполнен: мир '%s' не найден",
+  "autolan.error.port_in_use": "Невозможно открыть LAN: порт %s занят"
 }

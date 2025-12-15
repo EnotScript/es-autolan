@@ -57,7 +57,7 @@ public class CommandHandler {
                     boolean newValue = !AutoLan.CONFIG.enabled.get();
                     setConfig(() -> AutoLan.CONFIG.enabled.set(newValue));
                     context.getSource().sendSuccess(
-                            () -> Component.literal("AutoLan " + (newValue ? "включён" : "выключен"))
+                            () -> Component.translatable(newValue ? "autolan.command.toggle.on" : "autolan.command.toggle.off")
                                     .withStyle(newValue ? Style.EMPTY.withColor(0x22AA22) : Style.EMPTY.withColor(0xAA0000)),
                             true
                     );
@@ -71,7 +71,7 @@ public class CommandHandler {
                             int newPort = IntegerArgumentType.getInteger(context, "port");
                             setConfig(() -> AutoLan.CONFIG.port.set(newPort));
                             context.getSource().sendSuccess(
-                                    () -> Component.literal("Порт изменён на: " + newPort),
+                                    () -> Component.translatable("autolan.command.port.changed", newPort),
                                     true
                             );
                             return 1;
@@ -100,9 +100,7 @@ public class CommandHandler {
                             }
 
                             if (foundType == null) {
-                                context.getSource().sendFailure(Component.literal(
-                                        "Недопустимый режим игры! Допустимые значения: survival, creative, adventure, spectator"
-                                ).withStyle(Style.EMPTY.withColor(0xAA0000)));
+                                context.getSource().sendFailure(Component.translatable("autolan.command.gametype.invalid").withStyle(Style.EMPTY.withColor(0xAA0000)));
                                 return 0;
                             }
 
@@ -110,7 +108,7 @@ public class CommandHandler {
                             setConfig(() -> AutoLan.CONFIG.gameType.set(newType));
 
                             context.getSource().sendSuccess(
-                                    () -> Component.literal("Режим игры изменён на: " + newType.getName()),
+                                    () -> Component.translatable("autolan.command.gametype.changed", newType.getName()),
                                     true
                             );
                             return 1;
@@ -122,7 +120,7 @@ public class CommandHandler {
                     boolean newValue = !AutoLan.CONFIG.allowCheats.get();
                     setConfig(() -> AutoLan.CONFIG.allowCheats.set(newValue));
                     context.getSource().sendSuccess(
-                            () -> Component.literal("Читы " + (newValue ? "разрешены" : "запрещены")),
+                            () -> Component.translatable(newValue ? "autolan.command.cheats.on" : "autolan.command.cheats.off"),
                             true
                     );
                     return 1;
@@ -143,7 +141,7 @@ public class CommandHandler {
                             }
 
                             context.getSource().sendSuccess(
-                                    () -> Component.literal("Максимум игроков установлен: " + newCount),
+                                    () -> Component.translatable("autolan.command.maxplayers.changed", newCount),
                                     true
                             );
                             return 1;
@@ -162,7 +160,7 @@ public class CommandHandler {
                             }
 
                             context.getSource().sendSuccess(
-                                    () -> Component.literal("MOTD обновлён: " + newMotd),
+                                    () -> Component.translatable("autolan.command.motd.changed", newMotd),
                                     true
                             );
                             return 1;
@@ -173,7 +171,7 @@ public class CommandHandler {
                 .executes(context -> {
                     AutoLan.CONFIG_SPEC.save();
                     context.getSource().sendSuccess(
-                            () -> Component.literal("Конфигурация сохранена"),
+                            () -> Component.translatable("autolan.command.reload.done"),
                             true
                     );
                     return 1;
@@ -186,7 +184,7 @@ public class CommandHandler {
                             int newDelay = IntegerArgumentType.getInteger(context, "seconds");
                             setConfig(() -> AutoLan.CONFIG.autojoinDelaySeconds.set(newDelay));
                             context.getSource().sendSuccess(
-                                    () -> Component.literal("Задержка автозагрузки установлена: " + newDelay + " секунд"),
+                                    () -> Component.translatable("autolan.command.autojoinDelaySeconds.changed", newDelay),
                                     true
                             );
                             return 1;
@@ -200,7 +198,7 @@ public class CommandHandler {
                             String newWorldName = StringArgumentType.getString(context, "name");
                             setConfig(() -> AutoLan.CONFIG.autojoinWorldName.set(newWorldName));
                             context.getSource().sendSuccess(
-                                    () -> Component.literal("Имя мира для автозагрузки установлено: " + newWorldName),
+                                    () -> Component.translatable("autolan.command.autojoinWorldName.changed", newWorldName),
                                     true
                             );
                             return 1;

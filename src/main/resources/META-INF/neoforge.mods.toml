@@ -3,7 +3,7 @@ loaderVersion="${loader_version_range}"
 license="All rights reserved"
 
 [[mods]]
-modId="es-autolan"
+modId="autolan"
 version="1.2.1"
 displayName="ES Auto LAN"
 description='''
@@ -27,5 +27,5 @@ credits="discord-enotscript "
 
 [[modConfig]]
 type = "CLIENT"
-modId = "es-autolan"
+modId = "autolan"
 fileName = "autolan-common.toml"

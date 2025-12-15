@@ -11,6 +11,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.ServerSocket;
+import java.io.IOException;
+import java.io.File;
 
 /**
  * Управление LAN-сервером:
@@ -28,10 +32,21 @@ public class LanServerManager {
     public static void openToLan(IntegratedServer server) {
         if (!AutoLan.CONFIG.enabled.get()) return;
 
+        int desiredPort = AutoLan.CONFIG.port.get();
+
+        if (!isPortAvailable(desiredPort)) {
+            LOGGER.error("❌ Port {} is not available for binding", desiredPort);
+            var player = Minecraft.getInstance().player;
+            if (player != null) {
+                player.displayClientMessage(Component.translatable("autolan.error.port_in_use", desiredPort).withStyle(style -> style.withColor(0xFF5555)), false);
+            }
+            return;
+        }
+
         boolean success = server.publishServer(
                 AutoLan.CONFIG.gameType.get(),
                 AutoLan.CONFIG.allowCheats.get(),
-                AutoLan.CONFIG.port.get()
+                desiredPort
         );
 
         if (!success) {
@@ -68,23 +83,40 @@ public class LanServerManager {
     public static void setMaxPlayers(IntegratedServer server, int newMax) {
         try {
             Object playerList = server.getPlayerList();
-            Class<?> superClass = playerList.getClass().getSuperclass();
+            Class<?> clazz = playerList.getClass();
 
-            for (Field field : superClass.getDeclaredFields()) {
-                field.setAccessible(true);
-                if (field.getType() == int.class) {
-                    int value = field.getInt(playerList);
-                    if (value == 8 || value == AutoLan.CONFIG.maxPlayers.get()) {
-                        field.setInt(playerList, newMax);
-                        LOGGER.info("✅ Max players set to {} via field '{}'", newMax, field.getName());
-                        return;
-                    }
+            // Try common method names first
+            String[] methodNames = {"setMaxPlayers", "setPlayerMax", "setMaxPlayerCount", "setMaxPlayersForPlayerList"};
+            for (String name : methodNames) {
+                try {
+                    Method m = clazz.getMethod(name, int.class);
+                    m.invoke(playerList, newMax);
+                    LOGGER.info("✅ Max players set to {} via method '{}'", newMax, name);
+                    return;
+                } catch (NoSuchMethodException ignored) {
                 }
             }
 
-            LOGGER.warn("⚠️ Could not find maxPlayers field in PlayerList superclass");
+            // Fallback: search fields in class and superclasses
+            Class<?> current = clazz;
+            while (current != null) {
+                for (Field field : current.getDeclaredFields()) {
+                    field.setAccessible(true);
+                    if (field.getType() == int.class) {
+                        int value = field.getInt(playerList);
+                        if (value == 8 || value == AutoLan.CONFIG.maxPlayers.get()) {
+                            field.setInt(playerList, newMax);
+                            LOGGER.info("✅ Max players set to {} via field '{}'", newMax, field.getName());
+                            return;
+                        }
+                    }
+                }
+                current = current.getSuperclass();
+            }
+
+            LOGGER.warn("⚠️ Could not find maxPlayers field or setter in PlayerList class hierarchy");
         } catch (Exception e) {
-            LOGGER.error("❌ Failed to set maxPlayers: {}", e.getMessage());
+            LOGGER.error("❌ Failed to set maxPlayers", e);
         }
     }
 
@@ -112,8 +144,22 @@ public class LanServerManager {
     public static void updateServerMOTD(IntegratedServer server) {
         try {
             String newMotd = AutoLan.CONFIG.motd.get();
-            Class<?> current = server.getClass();
+            Class<?> clazz = server.getClass();
 
+            // Try common setter methods first
+            String[] methodNames = {"setMotd", "setMOTD", "setServerMotd", "setServerDescription"};
+            for (String name : methodNames) {
+                try {
+                    Method m = clazz.getMethod(name, String.class);
+                    m.invoke(server, newMotd);
+                    LOGGER.info("✅ MOTD updated to '{}' via method '{}'", newMotd, name);
+                    return;
+                } catch (NoSuchMethodException ignored) {
+                }
+            }
+
+            // Fallback: search fields
+            Class<?> current = clazz;
             while (current != null) {
                 for (Field field : current.getDeclaredFields()) {
                     field.setAccessible(true);
@@ -131,7 +177,16 @@ public class LanServerManager {
 
             LOGGER.warn("⚠️ MOTD field not found in class hierarchy");
         } catch (Exception e) {
-            LOGGER.error("❌ Failed to update MOTD: {}", e.getMessage());
+            LOGGER.error("❌ Failed to update MOTD", e);
+        }
+    }
+
+    private static boolean isPortAvailable(int port) {
+        try (ServerSocket socket = new ServerSocket(port)) {
+            socket.setReuseAddress(true);
+            return true;
+        } catch (IOException e) {
+            return false;
         }
     }
 }

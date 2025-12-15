@@ -1,3 +1,26 @@
+# Gradle
+.gradle/
+build/
+
+# IDE
+.vscode/
+.idea/
 *.iml
 
+# Dev run
+run/
 
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Others
+*.class
+*.jar
+
+# Local properties
+local.properties

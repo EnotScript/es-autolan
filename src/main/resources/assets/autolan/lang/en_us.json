@@ -54,5 +54,22 @@
   "config.autolan.motd.comment": "Server description (MOTD)",
   "config.autolan.motd.default": "Welcome to the AutoLAN world!",
   "config.autolan.autojoinWorldName.comment": "Name of the world for auto-join (folder in saves)",
-  "config.autolan.autojoinDelaySeconds.comment": "Delay before auto-joining world (in seconds)"
+  "config.autolan.autojoinDelaySeconds.comment": "Delay before auto-joining world (in seconds)",
+
+  "autolan.command.toggle.on": "AutoLan enabled",
+  "autolan.command.toggle.off": "AutoLan disabled",
+  "autolan.command.port.changed": "Port changed to %s",
+  "autolan.command.gametype.invalid": "Invalid game type! Valid values: survival, creative, adventure, spectator",
+  "autolan.command.gametype.changed": "Game type changed to %s",
+  "autolan.command.cheats.on": "Cheats enabled",
+  "autolan.command.cheats.off": "Cheats disabled",
+  "autolan.command.maxplayers.changed": "Max players set to %s",
+  "autolan.command.motd.changed": "MOTD updated: %s",
+  "autolan.command.reload.done": "Configuration saved",
+  "autolan.command.autojoinDelaySeconds.changed": "Auto-join delay set to %s seconds",
+  "autolan.command.autojoinWorldName.changed": "Auto-join world set to: %s",
+
+  "autolan.autojoin.starting": "Auto-join starting: %s",
+  "autolan.autojoin.failed_no_world": "Auto-join failed: world '%s' not found",
+  "autolan.error.port_in_use": "Unable to open LAN: port %s is in use"
 }
